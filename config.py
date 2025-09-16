@@ -8,7 +8,7 @@ print("OPENROUTER_API_KEY loaded:", OPENROUTER_API_KEY)
 
 # Temporary fix: Hardcode the API key for testing
 if not OPENROUTER_API_KEY:
-    OPENROUTER_API_KEY = "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"
+    OPENROUTER_API_KEY = "sk-or-v1-----"
     print("Using hardcoded API key for testing")
 
 # Security Configuration

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Masking Log Dashboard</title>
+    <style>
+        body { font-family: sans-serif; background: #f4f6fa; }
+        .log-entry { background: #fff; margin: 10px 0; padding: 15px; border-radius: 8px; display: flex; align-items: center; }
+        .avatar { width: 48px; height: 48px; border-radius: 50%; margin-right: 15px; }
+        .info { flex: 1; }
+        .patterns { color: #667eea; }
+        .search { margin: 20px 0; }
+        .logout { float: right; }
+    </style>
+</head>
+<body>
+    <h1>🔒 Masking Log Dashboard <a class="logout" href="/logout">Logout</a></h1>
+    <form class="search" method="get">
+        <input type="text" name="masked_type" placeholder="Masked type (e.g. email)" value="{{ masked_type }}">
+        <input type="number" name="min_count" placeholder="Min count" value="{{ min_count }}">
+        <input type="text" name="file_type" placeholder="File type (e.g. py)" value="{{ file_type }}">
+        <input type="text" name="status" placeholder="Status (e.g. masked)" value="{{ status }}">
+        <input type="text" name="date" placeholder="Date (YYYY-MM-DD)" value="{{ date }}">
+        <button type="submit">Filter</button>
+    </form>
+    {% for log in logs %}
+    <div class="log-entry">
+        <img class="avatar" src="{{ log.avatar }}" alt="avatar">
+        <div class="info">
+            <div><b>Time:</b> {{ log.timestamp }}</div>
+            <div><b>Masked Type:</b> {{ log.masked_type }}</div>
+            <div><b>Masked Value (File Type):</b> {{ log.masked_value }}</div>
+            <div><b>Count:</b> {{ log.count }}</div>
+        </div>
+    </div>
+    {% endfor %}
+</body>
+</html> 

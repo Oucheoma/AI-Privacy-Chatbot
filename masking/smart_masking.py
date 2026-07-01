@@ -29,7 +29,6 @@ class SmartMasker:
             "personal_data": False
         }
         
-        # Detect code content
         code_score = 0
         for pattern_list in CODE_PATTERNS.values():
             for pattern in pattern_list:
@@ -40,7 +39,7 @@ class SmartMasker:
             content_types["code"] = True
             self.masking_stats["code_detected"] = True
         
-        # Detect business content
+    
         business_score = 0
         for pattern_list in BUSINESS_PATTERNS.values():
             for pattern in pattern_list:
@@ -51,7 +50,7 @@ class SmartMasker:
             content_types["business_document"] = True
             self.masking_stats["business_content_detected"] = True
         
-        # Detect technical documentation
+     
         tech_terms = ["api", "endpoint", "database", "server", "client", "protocol", "interface"]
         tech_score = sum(1 for term in tech_terms if re.search(rf"\b{term}\b", text, re.IGNORECASE))
         if tech_score >= 3:
@@ -68,7 +67,6 @@ class SmartMasker:
                 matches = re.finditer(pattern, masked_text, re.IGNORECASE)
                 for match in matches:
                     original = match.group(0)
-                    # Create context-aware replacement
                     if category == "api_keys":
                         replacement = "<API_KEY>"
                     elif category == "passwords":
@@ -123,7 +121,6 @@ class SmartMasker:
         """Intelligently mask code while preserving structure and logic"""
         masked_text = text
         
-        # Mask import statements and dependencies
         import_patterns = [
             r"^(import|from|using|require|include)\s+[^\n]+",
             r"^\s*(import|from|using|require|include)\s+[^\n]+"
@@ -132,7 +129,6 @@ class SmartMasker:
         for pattern in import_patterns:
             masked_text = re.sub(pattern, "<IMPORT_STATEMENT>", masked_text, flags=re.MULTILINE | re.IGNORECASE)
         
-        # Mask file paths in code
         file_path_patterns = [
             r"['\"][^'\"]*\.(py|js|ts|java|cpp|c|cs|php|rb|go|rs|swift|kt|scala|r|m|pl|sh|bash|ps1|vbs|sql|html|css|xml|json|yaml|yml|toml|ini|cfg|conf|config)['\"]",
             r"['\"][^'\"]*/(?:[^/\n]+/)*[^/\n]*['\"]",
@@ -142,7 +138,6 @@ class SmartMasker:
         for pattern in file_path_patterns:
             masked_text = re.sub(pattern, '"<FILE_PATH>"', masked_text)
         
-        # Mask configuration values
         config_patterns = [
             r"(\w+)\s*[:=]\s*['\"][^'\"]+['\"]",  # key: "value" or key = "value"
             r"(\w+)\s*[:=]\s*\d+",  # key: 123 or key = 123
@@ -157,7 +152,6 @@ class SmartMasker:
         """Mask business-sensitive content while preserving document structure"""
         masked_text = text
         
-        # Mask company names and identifiers
         company_patterns = [
             r"\b[A-Z]{2,}(?:[A-Z][a-z]+)*\s+(?:Inc|Corp|LLC|Ltd|Company|Corporation)\b",
             r"\b(?:company|organization|enterprise|business)\s+[A-Z][a-z]+\b",
@@ -166,7 +160,6 @@ class SmartMasker:
         for pattern in company_patterns:
             masked_text = re.sub(pattern, "<COMPANY_NAME>", masked_text, flags=re.IGNORECASE)
         
-        # Mask financial information
         financial_patterns = [
             r"\$\d+(?:,\d{3})*(?:\.\d{2})?",  # Currency amounts
             r"\b\d+(?:,\d{3})*(?:\.\d{2})?\s*(?:dollars?|USD|EUR|GBP)\b",
@@ -176,7 +169,6 @@ class SmartMasker:
         for pattern in financial_patterns:
             masked_text = re.sub(pattern, "<FINANCIAL_AMOUNT>", masked_text, flags=re.IGNORECASE)
         
-        # Mask project and initiative names
         project_patterns = [
             r"\b(?:project|initiative|strategy|roadmap)\s+[A-Z][a-zA-Z\s]+",
             r"\b[A-Z][a-zA-Z\s]{3,}(?:Project|Initiative|Strategy|Roadmap)\b",
@@ -191,22 +183,18 @@ class SmartMasker:
         """Extract context clues to help the AI understand the masked content"""
         clues = []
         
-        # Extract comments and documentation
         comments = re.findall(r'#.*|//.*|/\*[\s\S]*?\*/|<!--[\s\S]*?-->', text)
         if comments:
             clues.append(f"Found {len(comments)} comment(s) that provide context about the code/document structure")
-        
-        # Extract function/class names (without revealing implementation)
+    
         function_names = re.findall(r'\b(?:def|function|class)\s+([a-zA-Z_][a-zA-Z0-9_]*)', text)
         if function_names:
             clues.append(f"Contains {len(function_names)} function/class definition(s): {', '.join(function_names[:3])}")
-        
-        # Extract file extensions mentioned
+     
         extensions = re.findall(r'\.(py|js|ts|java|cpp|c|cs|php|rb|go|rs|swift|kt|scala|r|m|pl|sh|bash|ps1|vbs|sql|html|css|xml|json|yaml|yml|toml|ini|cfg|conf|config)\b', text)
         if extensions:
             clues.append(f"References file types: {', '.join(set(extensions))}")
-        
-        # Extract programming language indicators
+      
         lang_indicators = {
             "python": ["import", "def", "class", "if __name__", "self."],
             "javascript": ["function", "const", "let", "var", "=>", "console.log"],
@@ -225,27 +213,27 @@ class SmartMasker:
         """Generate an AI-friendly prompt that explains the masking and provides context"""
         prompt_parts = []
         
-        prompt_parts.append("🔒 SECURITY NOTICE: This content has been automatically redacted to protect sensitive information.")
+        prompt_parts.append(" SECURITY NOTICE: This content has been automatically redacted to protect sensitive information.")
         
         if content_types["code"]:
-            prompt_parts.append("📝 CONTENT TYPE: Source code detected")
-            prompt_parts.append("💡 ANALYSIS FOCUS: Code structure, logic flow, and architectural patterns")
+            prompt_parts.append(" CONTENT TYPE: Source code detected")
+            prompt_parts.append(" ANALYSIS FOCUS: Code structure, logic flow, and architectural patterns")
         elif content_types["business_document"]:
-            prompt_parts.append("📄 CONTENT TYPE: Business document detected")
-            prompt_parts.append("💡 ANALYSIS FOCUS: Document structure, business logic, and process flows")
+            prompt_parts.append(" CONTENT TYPE: Business document detected")
+            prompt_parts.append(" ANALYSIS FOCUS: Document structure, business logic, and process flows")
         elif content_types["technical_document"]:
-            prompt_parts.append("🔧 CONTENT TYPE: Technical documentation detected")
-            prompt_parts.append("💡 ANALYSIS FOCUS: Technical specifications and system architecture")
-        
+            prompt_parts.append(" CONTENT TYPE: Technical documentation detected")
+            prompt_parts.append(" ANALYSIS FOCUS: Technical specifications and system architecture")
+    
         if masking_stats["pii_masked"] > 0:
-            prompt_parts.append(f"🛡️ SECURITY: {masking_stats['pii_masked']} sensitive elements masked")
+            prompt_parts.append(f"SECURITY: {masking_stats['pii_masked']} sensitive elements masked")
         
         if clues:
-            prompt_parts.append("🔍 CONTEXT CLUES:")
+            prompt_parts.append(" CONTEXT CLUES:")
             for clue in clues:
                 prompt_parts.append(f"  • {clue}")
         
-        prompt_parts.append("\n📋 INSTRUCTIONS:")
+        prompt_parts.append("\n INSTRUCTIONS:")
         prompt_parts.append("• Analyze the structure and logic of the content")
         prompt_parts.append("• Provide insights about patterns and best practices")
         prompt_parts.append("• Suggest improvements or identify potential issues")
@@ -270,40 +258,33 @@ def smart_mask(text: str, file_name: str = "", use_secure_filter: bool = None) -
     """
     if use_secure_filter is None:
         use_secure_filter = USE_SECURE_FILTER
-    
-    # If secure filtering is disabled, return original text with minimal processing
+
     if not use_secure_filter:
-        return text, "🔓 PERSONAL MODE: Content is being processed without security filtering.\n\n"
+        return text, " PERSONAL MODE: Content is being processed without security filtering.\n\n"
     
     masker = SmartMasker(SECURITY_LEVEL)
     
-    # Detect content type
+   
     content_types = masker.detect_content_type(text)
     
-    # Apply masking based on content type and security level
+    
     masked_text = text
     
-    # Always mask sensitive patterns
     masked_text = masker.mask_sensitive_patterns(masked_text)
     
-    # Apply content-specific masking
     if content_types["code"]:
         masked_text = masker.mask_code_content(masked_text)
     
     if content_types["business_document"]:
         masked_text = masker.mask_business_content(masked_text)
     
-    # Extract context clues
     clues = masker.extract_context_clues(text, content_types)
     
-    # Generate AI prompt
     ai_prompt = masker.generate_ai_prompt(content_types, clues, masker.masking_stats)
     
-    #logging the masked text
     user_id = "user@example.com"  # Replace with session, IP, or random for real use
     user_hash = hashlib.sha256(user_id.encode()).hexdigest()[:8]
     file_type = file_name.split('.')[-1] if '.' in file_name else "txt"
-    # Log each masked type and its count to SQLite
     masked_type_counts = {t: masker.masking_stats["sensitive_patterns_found"].count(t) for t in set(masker.masking_stats["sensitive_patterns_found"])}
     for masked_type, count in masked_type_counts.items():
         log_masking_event(masked_type, file_type, count)
@@ -313,8 +294,6 @@ def smart_mask(text: str, file_name: str = "", use_secure_filter: bool = None) -
 
 def get_masking_stats() -> Dict:
     """Get statistics about the last masking operation"""
-    # This would need to be implemented as a class method or global state
-    # For now, return a placeholder
     return {
         "pii_masked": 0,
         "code_detected": False,

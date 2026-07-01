@@ -10,7 +10,6 @@ from masking.smart_masking import smart_mask
 from config import USE_SECURE_FILTER, OPENROUTER_API_KEY
 import logging
 
-# Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -26,12 +25,12 @@ class ProxyService:
             },
             "openai": {
                 "base_url": "https://api.openai.com/v1",
-                "api_key": None,  # Will be set from environment
+                "api_key": None, 
                 "models": ["gpt-4", "gpt-3.5-turbo"]
             },
             "anthropic": {
                 "base_url": "https://api.anthropic.com/v1",
-                "api_key": None,  # Will be set from environment
+                "api_key": None, 
                 "models": ["claude-3-haiku-20240307", "claude-3-sonnet-20240229"]
             }
         }
@@ -50,11 +49,9 @@ class ProxyService:
         
         service_config = self.services[target_service]
         
-        # Check rate limits
         if not self._check_rate_limit():
             raise HTTPException(status_code=429, detail="Rate limit exceeded")
         
-        # Get request body
         body = None
         if request.method in ["POST", "PUT", "PATCH"]:
             try:
@@ -62,24 +59,20 @@ class ProxyService:
             except:
                 body = None
         
-        # Get headers (filter out sensitive ones)
         headers = dict(request.headers)
         headers_to_remove = ["host", "content-length", "transfer-encoding"]
         for header in headers_to_remove:
             headers.pop(header, None)
-        
-        # Add service-specific headers
+  
         if target_service == "openrouter":
             headers.update({
                 "Authorization": f"Bearer {service_config['api_key']}",
                 "HTTP-Referer": "http://localhost:8000",
                 "X-Title": "Secure AI Proxy"
             })
-        
-        # Build target URL
+
         target_url = f"{service_config['base_url']}/{path}"
-        
-        # Log the request
+ 
         self._log_request(request, target_service, path)
         
         try:
@@ -91,11 +84,9 @@ class ProxyService:
                     content=body,
                     params=dict(request.query_params)
                 )
-                
-                # Log the response
+             
                 self._log_response(response, target_service)
-                
-                # Return the response
+          
                 return Response(
                     content=response.content,
                     status_code=response.status_code,
@@ -114,22 +105,19 @@ class ProxyService:
             raise HTTPException(status_code=400, detail=f"Unknown service: {target_service}")
         
         service_config = self.services[target_service]
-        
-        # Check rate limits
+    
         if not self._check_rate_limit():
             raise HTTPException(status_code=429, detail="Rate limit exceeded")
-        
-        # Extract messages from the request
+            
         messages = body.get("messages", [])
         if not messages:
             raise HTTPException(status_code=400, detail="No messages provided")
-        
-        # Apply security filtering to messages
+ 
         filtered_messages = []
         for message in messages:
             if message.get("role") == "user":
                 content = message.get("content", "")
-                # Apply smart masking
+        
                 masked_content, _ = smart_mask(content, "chat_message.txt", USE_SECURE_FILTER)
                 filtered_messages.append({
                     "role": message["role"],
@@ -137,8 +125,7 @@ class ProxyService:
                 })
             else:
                 filtered_messages.append(message)
-        
-        # Prepare the request body
+   
         request_body = {
             "model": body.get("model", service_config["models"][0]),
             "messages": filtered_messages,
@@ -146,14 +133,12 @@ class ProxyService:
             "temperature": body.get("temperature", 0.7),
             "stream": body.get("stream", False)
         }
-        
-        # Add optional parameters
+       
         optional_params = ["top_p", "frequency_penalty", "presence_penalty", "stop"]
         for param in optional_params:
             if param in body:
                 request_body[param] = body[param]
-        
-        # Prepare headers
+     
         headers = {
             "Content-Type": "application/json",
             "Authorization": f"Bearer {service_config['api_key']}"
@@ -164,11 +149,9 @@ class ProxyService:
                 "HTTP-Referer": "http://localhost:8000",
                 "X-Title": "Secure AI Proxy"
             })
-        
-        # Build target URL
+      
         target_url = f"{service_config['base_url']}/chat/completions"
-        
-        # Log the request
+     
         self._log_request(request, target_service, "chat/completions")
         
         try:
@@ -181,16 +164,14 @@ class ProxyService:
                 
                 response.raise_for_status()
                 result = response.json()
-                
-                # Add security metadata
+             
                 result["security_metadata"] = {
                     "secure_filtering_applied": USE_SECURE_FILTER,
                     "original_message_count": len(messages),
                     "filtered_message_count": len(filtered_messages),
                     "proxy_service": target_service
                 }
-                
-                # Log the response
+          
                 self._log_response(response, target_service)
                 
                 return result
@@ -207,23 +188,19 @@ class ProxyService:
         Check if the request is within rate limits
         """
         current_time = time.time()
-        
-        # Remove old requests from history
+      
         self.request_history = [req_time for req_time in self.request_history 
                               if current_time - req_time < 3600]  # Keep last hour
-        
-        # Check hourly limit
+     
         if len(self.request_history) >= self.rate_limits["requests_per_hour"]:
             return False
-        
-        # Check minute limit (last 60 seconds)
+   
         recent_requests = [req_time for req_time in self.request_history 
                           if current_time - req_time < 60]
         
         if len(recent_requests) >= self.rate_limits["requests_per_minute"]:
             return False
-        
-        # Add current request to history
+      
         self.request_history.append(current_time)
         return True
 
@@ -263,8 +240,7 @@ class ProxyService:
         """
         client_ip = request.client.host if request.client else "unknown"
         user_agent = request.headers.get("user-agent", "")
-        
-        # Create a hash from IP and user agent
+   
         user_string = f"{client_ip}:{user_agent}"
         return hashlib.md5(user_string.encode()).hexdigest()[:8]
 

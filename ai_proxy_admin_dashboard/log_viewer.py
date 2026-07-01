@@ -5,11 +5,10 @@ import os
 from sqlite_logger import get_logs, init_db
 
 app = Flask(__name__)
-app.secret_key = "your_secret_key"  # Change this!
+app.secret_key = "secret_key" 
 
 LOG_FILE = "proxy_logs.json"
 
-# Load logs from file
 def load_logs():
     logs = []
     if os.path.exists(LOG_FILE):
@@ -25,7 +24,6 @@ def avatar_for_hash(user_hash):
     idx = int(user_hash, 16) % 10 + 1
     return f"/static/avatars/{idx}.png"
 
-# Initialize the SQLite database
 init_db()
 
 @app.route("/login", methods=["GET", "POST"])

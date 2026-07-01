@@ -1,29 +1,22 @@
 import os
 
-# OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "missing-api-key")
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 
-# Debug: Print the API key value
 print("OPENROUTER_API_KEY loaded:", OPENROUTER_API_KEY)
 
-# Temporary fix: Hardcode the API key for testing
 if not OPENROUTER_API_KEY:
     OPENROUTER_API_KEY = "sk-or-v1-----"
     print("Using hardcoded API key for testing")
 
-# Security Configuration
 USE_SECURE_FILTER = os.getenv("USE_SECURE_FILTER", "True").lower() == "true"
-SECURITY_LEVEL = os.getenv("SECURITY_LEVEL", "high")  # low, medium, high
+SECURITY_LEVEL = os.getenv("SECURITY_LEVEL", "high")  
 
-# Enhanced filtering patterns
 SENSITIVE_PATTERNS = {
     "api_keys": [
         r"(api_key|api_key_|token|access_token|secret_key|private_key)[\"']?\s*[:=]\s*[\"']?[a-zA-Z0-9_\-]{16,}[\"']?",
         r"sk-[a-zA-Z0-9]{48}",
         r"pk_[a-zA-Z0-9]{48}",
         r"[a-zA-Z0-9]{32,}",
-        # add more regex paettrn
-        # ner
     ],
     "passwords": [
         r"(password|passwd|pwd)[\"']?\s*[:=]\s*[\"']?[^\s\"']+[\"']?",
@@ -54,11 +47,11 @@ SENSITIVE_PATTERNS = {
     ],
     "names": [
         # Enhanced name patterns that are more flexible
-        r"\b[A-Z][a-z]+\s+[A-Z][a-z]+\b",  # First Last
-        r"\b[A-Z][a-z]+\s+[A-Z]\.\s*[A-Z][a-z]+\b",  # First M. Last
-        r"\b[A-Z][a-z]+\s+[A-Z][a-z]+\s+[A-Z][a-z]+\b",  # First Middle Last
-        r"\b[A-Z][a-z]+\s+[A-Z][a-z]+\s+[A-Z]\.\b",  # First Last M.
-        r"\b[A-Z][a-z]+\s+[A-Z][a-z]+\s+[A-Z][a-z]+\s+[A-Z][a-z]+\b",  # First Middle Middle Last
+        r"\b[A-Z][a-z]+\s+[A-Z][a-z]+\b", 
+        r"\b[A-Z][a-z]+\s+[A-Z]\.\s*[A-Z][a-z]+\b", 
+        r"\b[A-Z][a-z]+\s+[A-Z][a-z]+\s+[A-Z][a-z]+\b", 
+        r"\b[A-Z][a-z]+\s+[A-Z][a-z]+\s+[A-Z]\.\b", 
+        r"\b[A-Z][a-z]+\s+[A-Z][a-z]+\s+[A-Z][a-z]+\s+[A-Z][a-z]+\b", 
     ],
     "companies": [
         r"\b[A-Z]{2,}(?:[A-Z][a-z]+)*\s+(?:Inc|Corp|LLC|Ltd|Company|Corporation|Limited|Partnership|Associates)\b",
@@ -78,7 +71,6 @@ SENSITIVE_PATTERNS = {
     ]
 }
 
-# Code and document detection patterns
 CODE_PATTERNS = {
     "programming_keywords": [
         r"\b(function|def|class|import|export|require|include|package|namespace|module)\b",
@@ -99,7 +91,6 @@ CODE_PATTERNS = {
     ]
 }
 
-# Business and confidential content patterns
 BUSINESS_PATTERNS = {
     "confidential_terms": [
         r"\b(confidential|secret|private|internal|proprietary|classified|restricted)\b",

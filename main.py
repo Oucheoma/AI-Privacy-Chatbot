@@ -13,25 +13,20 @@ from services.proxy_service import ProxyService
 
 app = FastAPI(title="Secure AI Proxy Gateway")
 
-# Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Configure this properly for production
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Add security middleware
 app.add_middleware(SecurityMiddleware)
 
-# Include the API routes
 app.include_router(router)
 
-# Set up templates for the web interface
 templates = Jinja2Templates(directory="templates")
 
-# Initialize proxy service
 proxy_service = ProxyService()
 
 @app.get("/", response_class=HTMLResponse)
@@ -50,10 +45,8 @@ async def proxy_request(request: Request, path: str):
     Main proxy endpoint that forwards requests to various AI services
     """
     try:
-        # Get the target service from query parameters or headers
         target_service = request.query_params.get("target", "openrouter")
-        
-        # Forward the request to the appropriate service
+
         response = await proxy_service.forward_request(request, path, target_service)
         return response
         

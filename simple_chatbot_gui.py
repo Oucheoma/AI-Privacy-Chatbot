@@ -16,17 +16,16 @@ import os
 import queue
 import re
 
-# Enhanced masking disabled - using basic redaction only
 ENHANCED_MASKING_AVAILABLE = False
 
 class SimpleChatbotGUI:
     def __init__(self, root):
         self.root = root
-        self.root.title("🔐 Privacy-Aware Chatbot")
+        self.root.title("Privacy-Aware Chatbot")
         self.root.geometry("1200x900")
         self.root.configure(bg='white')
         
-        # Initialize data
+     
         self.session_id = self._generate_session_id()
         self.anonymous_logs = []
         self.redaction_enabled = True
@@ -35,21 +34,20 @@ class SimpleChatbotGUI:
         self.is_loading = False
         self.current_session_id = None
         self.chat_sessions = []
-        self.account_type = None  # 'personal' or 'work'
+        self.account_type = None  
         
-        # Conversation memory for context
+      
         self.conversation_history = []
-        self.max_history_length = 10  # Keep last 10 messages for context
+        self.max_history_length = 10  
         
-        # OpenRouter API configuration
+      
         self.openrouter_api_key = os.getenv("OPENROUTER_API_KEY")
         self.use_openrouter = bool(self.openrouter_api_key)
         
-        # Threading for API calls
         self.api_queue = queue.Queue()
         self.response_queue = queue.Queue()
         
-        # Configure colors (Light/White, Yellow, White, Black theme)
+      
         self.colors = {
             'primary': '#FFD700',      # Yellow
             'secondary': '#000000',    # Black (secondary color)
@@ -72,7 +70,7 @@ class SimpleChatbotGUI:
             'warning': '#FFD700'       # Yellow for warnings
         }
         
-        # User credentials (in production, use proper authentication)
+
         self.users = {
             "admin": {
                 "password": "admin123",
@@ -91,43 +89,41 @@ class SimpleChatbotGUI:
             }
         }
         
-        # Show the login page
+       
         self.show_login_page()
         
-        # Start API response checker
+     
         self.check_api_responses()
     
     def show_login_page(self):
         """Show the login page with Username/Password fields"""
-        # Clear the main window
+      
         for widget in self.root.winfo_children():
             widget.destroy()
         
-        # Configure grid weights for perfect centering
+     
         self.root.columnconfigure(0, weight=1)
         self.root.rowconfigure(0, weight=1)
         
-        # Main frame - centered
+     
         main_frame = tk.Frame(self.root, bg=self.colors['background'])
         main_frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S), padx=50, pady=50)
         main_frame.columnconfigure(0, weight=1)
         main_frame.rowconfigure(1, weight=1)
-        
-        # Title and subtitle
+       
         title_frame = tk.Frame(main_frame, bg=self.colors['background'])
         title_frame.grid(row=0, column=0, sticky=(tk.W, tk.E), padx=20, pady=20)
         
-        # Title with lock icon
+       
         title_label = tk.Label(
             title_frame,
-            text="🔐 Privacy-Aware Chatbot",
+            text="Privacy-Aware Chatbot",
             font=("Segoe UI", 20, "bold"),
             fg=self.colors['secondary'],
             bg=self.colors['background']
         )
         title_label.pack()
         
-        # Subtitle
         subtitle_label = tk.Label(
             title_frame,
             text="AI Chatbot with Data Redaction and Anonymous Logging",
@@ -137,7 +133,7 @@ class SimpleChatbotGUI:
         )
         subtitle_label.pack(pady=(5, 0))
         
-        # Anonymous session info
+
         session_info_label = tk.Label(
             title_frame,
             text="Session is anonymous for each user",
@@ -147,11 +143,11 @@ class SimpleChatbotGUI:
         )
         session_info_label.pack(pady=(5, 0))
         
-        # Login form
+     
         login_frame = tk.Frame(main_frame, bg=self.colors['background'])
         login_frame.grid(row=1, column=0, sticky=(tk.W, tk.E, tk.N, tk.S), padx=10, pady=10)
         
-        # Username field
+     
         username_label = tk.Label(
             login_frame,
             text="Username:",
@@ -168,7 +164,7 @@ class SimpleChatbotGUI:
         )
         self.username_entry.pack(pady=5)
         
-        # Password field
+     
         password_label = tk.Label(
             login_frame,
             text="Password:",
@@ -186,14 +182,14 @@ class SimpleChatbotGUI:
         )
         self.password_entry.pack(pady=5)
         
-        # Login buttons
+
         buttons_frame = tk.Frame(login_frame, bg=self.colors['background'])
         buttons_frame.pack(pady=20)
         
-        # Login button
+    
         login_button = tk.Button(
             buttons_frame,
-            text="🔐 Login",
+            text="Login",
             command=self.do_login,
             font=("Segoe UI", 14, "bold"),
             bg=self.colors['primary'],
@@ -207,10 +203,10 @@ class SimpleChatbotGUI:
         )
         login_button.pack(pady=5)
         
-        # Login as Guest button
+       
         guest_button = tk.Button(
             buttons_frame,
-            text="👤 Login as Guest",
+            text="Login as Guest",
             command=self.login_as_guest,
             font=("Segoe UI", 14, "bold"),
             bg=self.colors['secondary'],
@@ -224,11 +220,11 @@ class SimpleChatbotGUI:
         )
         guest_button.pack(pady=5)
         
-        # API status
+
         status_frame = tk.Frame(main_frame, bg=self.colors['background'])
         status_frame.grid(row=2, column=0, sticky=(tk.W, tk.E), padx=10, pady=10)
         
-        api_status = "✅ OpenRouter API Available" if self.use_openrouter else "❌ OpenRouter API Not Available"
+        api_status = "OpenRouter API Available" if self.use_openrouter else "OpenRouter API Not Available"
         status_label = tk.Label(
             status_frame,
             text=api_status,
@@ -238,7 +234,7 @@ class SimpleChatbotGUI:
         )
         status_label.pack()
         
-        # Bind Enter key to login
+    
         self.username_entry.bind("<Return>", lambda e: self.password_entry.focus())
         self.password_entry.bind("<Return>", lambda e: self.do_login())
     
@@ -251,7 +247,7 @@ class SimpleChatbotGUI:
             messagebox.showerror("Login Error", "Please enter both username and password")
             return
         
-        # Check if user exists and password matches
+   
         if username in self.users and self.users[username]["password"] == password:
             self.current_user = username
             self.is_admin = self.users[username]["role"] == "admin"
@@ -265,7 +261,7 @@ class SimpleChatbotGUI:
         """Login as guest user"""
         self.current_user = "guest"
         self.is_admin = False
-        self.redaction_enabled = True  # Guest gets redaction enabled
+        self.redaction_enabled = True  
         self._log_action("user_login", {"username": "guest", "role": "guest"})
         messagebox.showinfo("Guest Login", "Logged in as Guest User")
         self.show_chat_screen()
@@ -274,33 +270,33 @@ class SimpleChatbotGUI:
         """Handle account type selection and proceed to chat screen"""
         self.account_type = account_type
         
-        # Set redaction based on account type
+   
         if account_type == "personal":
             self.redaction_enabled = False
             messagebox.showinfo("Personal Mode", "Personal account selected - Redaction is OFF")
-        else:  # work
+        else:  
             self.redaction_enabled = True
             messagebox.showinfo("Work Mode", "Work account selected - Redaction is ON")
         
         self._log_action("account_type_selected", {"type": account_type, "redaction": self.redaction_enabled})
         
-        # Proceed to chat screen
+       
         self.show_chat_screen()
     
     def show_chat_screen(self):
         """Show the chat screen with main chat area and controls"""
-        # Clear the main window
+        
         for widget in self.root.winfo_children():
             widget.destroy()
         
-        # Configure grid weights
+        
         self.root.columnconfigure(0, weight=1)
         self.root.rowconfigure(0, weight=1)
         
-        # Create main chat area
+    
         self.create_chat_area()
         
-        # Add welcome message
+    
         user_name = self.users.get(self.current_user, {}).get('name', 'Guest User')
         welcome_msg = f"Hello {user_name}! I'm your privacy-aware chatbot. I can help with programming, security, and general questions while protecting your sensitive data."
         self.add_bot_message(welcome_msg)
@@ -309,15 +305,15 @@ class SimpleChatbotGUI:
     
     def create_chat_area(self):
         """Create the main chat area with top bar and controls"""
-        # Top bar with user controls
+      
         top_bar = tk.Frame(self.root, bg=self.colors['background'])
         top_bar.grid(row=0, column=0, sticky=(tk.W, tk.E), padx=10, pady=5)
         
-        # User status buttons (right side)
+        
         user_frame = tk.Frame(top_bar, bg=self.colors['background'])
         user_frame.pack(side=tk.RIGHT)
         
-        # Logout button
+        
         logout_button = tk.Button(
             user_frame,
             text="Logout",
@@ -332,7 +328,7 @@ class SimpleChatbotGUI:
         )
         logout_button.pack(side=tk.LEFT, padx=(0, 5))
         
-        # User status button
+      
         user_name = self.users.get(self.current_user, {}).get('name', 'Guest User')
         user_button = tk.Button(
             user_frame,
@@ -347,13 +343,13 @@ class SimpleChatbotGUI:
         )
         user_button.pack(side=tk.LEFT)
         
-        # Main chat area
+        
         chat_frame = tk.Frame(self.root, bg=self.colors['background'])
         chat_frame.grid(row=1, column=0, sticky=(tk.W, tk.E, tk.N, tk.S), padx=10, pady=5)
         chat_frame.columnconfigure(0, weight=1)
         chat_frame.rowconfigure(0, weight=1)
         
-        # Chat label
+        
         chat_label = tk.Label(
             chat_frame,
             text="Chat:",
@@ -363,7 +359,7 @@ class SimpleChatbotGUI:
         )
         chat_label.grid(row=0, column=0, sticky=tk.W, pady=(0, 5))
         
-        # Chat display
+   
         self.chat_display = scrolledtext.ScrolledText(
             chat_frame,
             font=("Segoe UI", 11),
@@ -378,7 +374,7 @@ class SimpleChatbotGUI:
         )
         self.chat_display.grid(row=1, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
         
-        # Configure text tags for styling
+   
         self.chat_display.tag_configure("user", 
             background='#E3F2FD',  # Light blue for user messages
             lmargin1=20, 
@@ -413,19 +409,19 @@ class SimpleChatbotGUI:
             spacing3=5
         )
         
-        # Bottom controls
+        
         controls_frame = tk.Frame(self.root, bg=self.colors['background'])
         controls_frame.grid(row=2, column=0, sticky=(tk.W, tk.E), padx=10, pady=5)
         
-        # Left side controls
+       
         left_controls = tk.Frame(controls_frame, bg=self.colors['background'])
         left_controls.pack(side=tk.LEFT)
         
-        # Redaction button
+     
         redaction_status = "ON" if self.redaction_enabled else "OFF"
         self.redaction_button = tk.Button(
             left_controls,
-            text=f"🔒 Redaction: {redaction_status}",
+            text=f"Redaction: {redaction_status}",
             command=self.toggle_redaction,
             font=("Segoe UI", 10),
             bg=self.colors['primary'],
@@ -437,10 +433,10 @@ class SimpleChatbotGUI:
         )
         self.redaction_button.pack(side=tk.LEFT, padx=(0, 5))
         
-        # Clear button
+      
         clear_button = tk.Button(
             left_controls,
-            text="🗑️ Clear",
+            text="Clear",
             command=self.clear_chat,
             font=("Segoe UI", 10),
             bg=self.colors['secondary'],
@@ -452,11 +448,11 @@ class SimpleChatbotGUI:
         )
         clear_button.pack(side=tk.LEFT, padx=(0, 5))
         
-        # Logs button (admin only)
+       
         if self.is_admin:
             logs_button = tk.Button(
                 left_controls,
-                text="📊 Logs",
+                text="Logs",
                 command=self.show_logs,
                 font=("Segoe UI", 10),
                 bg=self.colors['secondary'],
@@ -468,10 +464,10 @@ class SimpleChatbotGUI:
             )
             logs_button.pack(side=tk.LEFT, padx=(0, 5))
         
-        # Export button
+        
         export_button = tk.Button(
             left_controls,
-            text="📤 Export",
+            text="Export",
             command=self.export_chat,
             font=("Segoe UI", 10),
             bg=self.colors['secondary'],
@@ -483,11 +479,11 @@ class SimpleChatbotGUI:
         )
         export_button.pack(side=tk.LEFT)
         
-        # Input area
+       
         input_frame = tk.Frame(controls_frame, bg=self.colors['background'])
         input_frame.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(20, 10))
         
-        # Text input box
+       
         self.message_input = tk.Text(
             input_frame,
             font=("Segoe UI", 11),
@@ -506,10 +502,10 @@ class SimpleChatbotGUI:
         self.message_input.bind("<Shift-Return>", self._insert_newline)
         self.message_input.bind("<KeyRelease>", self._auto_resize_input)
         
-        # Send button
+     
         self.send_button = tk.Button(
             input_frame,
-            text="📤 Send",
+            text="Send",
             command=self.send_message,
             font=("Segoe UI", 11),
             bg=self.colors['primary'],
@@ -523,11 +519,11 @@ class SimpleChatbotGUI:
         )
         self.send_button.pack(side=tk.RIGHT, padx=(10, 0))
         
-        # Status bar
+        
         status_frame = tk.Frame(self.root, bg='#424242')
         status_frame.grid(row=3, column=0, sticky=(tk.W, tk.E), padx=10, pady=2)
         
-        status_text = f"🔒 session {self.session_id} | {len(self.conversation_history)//2} | 🔒 {redaction_status} | 👤 {self.current_user}"
+        status_text = f"session {self.session_id} | {len(self.conversation_history)//2} | 🔒 {redaction_status} | 👤 {self.current_user}"
         status_label = tk.Label(
             status_frame,
             text=status_text,
@@ -546,10 +542,10 @@ class SimpleChatbotGUI:
         signin_window.transient(self.root)
         signin_window.grab_set()
         
-        # Center the window
+        
         signin_window.geometry("+%d+%d" % (self.root.winfo_rootx() + 50, self.root.winfo_rooty() + 50))
         
-        # Title
+       
         tk.Label(
             signin_window,
             text="Sign In",
@@ -558,11 +554,11 @@ class SimpleChatbotGUI:
             bg=self.colors['background']
         ).pack(pady=(20, 10))
         
-        # User selection frame
+        
         user_frame = tk.Frame(signin_window, bg=self.colors['background'])
         user_frame.pack(pady=10)
         
-        # User selection label
+        
         tk.Label(
             user_frame,
             text="Select User:",
@@ -571,10 +567,10 @@ class SimpleChatbotGUI:
             bg=self.colors['background']
         ).pack(pady=5)
         
-        # User selection variable
+  
         selected_user = tk.StringVar(value="guest")
         
-        # User radio buttons
+      
         users = [
             ("Guest", "guest", "Limited access"),
             ("User", "user", "Standard access"),
@@ -593,12 +589,11 @@ class SimpleChatbotGUI:
                 selectcolor=self.colors['primary']
             )
             user_radio.pack(anchor=tk.W, pady=2)
-        
-        # Password frame
+       
         password_frame = tk.Frame(signin_window, bg=self.colors['background'])
         password_frame.pack(pady=10)
         
-        # Password label
+        
         tk.Label(
             password_frame,
             text="Password:",
@@ -607,7 +602,7 @@ class SimpleChatbotGUI:
             bg=self.colors['background']
         ).pack(pady=5)
         
-        # Password entry
+      
         password_entry = tk.Entry(
             password_frame,
             font=("Segoe UI", 12),
@@ -616,7 +611,7 @@ class SimpleChatbotGUI:
         )
         password_entry.pack(pady=5)
         
-        # Sign in button
+        
         def do_signin():
             username = selected_user.get()
             password = password_entry.get().strip()
@@ -644,11 +639,11 @@ class SimpleChatbotGUI:
         )
         signin_button.pack(pady=20)
         
-        # Focus on password entry
+     
         password_entry.focus()
         password_entry.bind("<Return>", lambda e: do_signin())
         
-        # Show password hints
+       
         hints_frame = tk.Frame(signin_window, bg=self.colors['background'])
         hints_frame.pack(pady=10)
         
@@ -684,10 +679,10 @@ class SimpleChatbotGUI:
         create_window.transient(self.root)
         create_window.grab_set()
         
-        # Center the window
+        
         create_window.geometry("+%d+%d" % (self.root.winfo_rootx() + 50, self.root.winfo_rooty() + 50))
         
-        # Title
+
         tk.Label(
             create_window,
             text="Create Account",
@@ -696,7 +691,7 @@ class SimpleChatbotGUI:
             bg=self.colors['background']
         ).pack(pady=(20, 10))
         
-        # Full Name
+       
         tk.Label(
             create_window,
             text="Full Name:",
@@ -712,7 +707,7 @@ class SimpleChatbotGUI:
         )
         name_entry.pack(pady=5)
         
-        # Email
+ 
         tk.Label(
             create_window,
             text="Email:",
@@ -728,7 +723,7 @@ class SimpleChatbotGUI:
         )
         email_entry.pack(pady=5)
         
-        # Password
+ 
         tk.Label(
             create_window,
             text="Password:",
@@ -745,7 +740,7 @@ class SimpleChatbotGUI:
         )
         password_entry.pack(pady=5)
         
-        # Create account button
+
         def do_create_account():
             name = name_entry.get().strip()
             email = email_entry.get().strip()
@@ -772,7 +767,7 @@ class SimpleChatbotGUI:
         )
         create_button.pack(pady=20)
         
-        # Focus on name entry
+     
         name_entry.focus()
         name_entry.bind("<Return>", lambda e: email_entry.focus())
         email_entry.bind("<Return>", lambda e: password_entry.focus())
@@ -785,11 +780,11 @@ class SimpleChatbotGUI:
             return
         
         log_window = tk.Toplevel(self.root)
-        log_window.title("📊 Anonymous Logs - Admin View")
+        log_window.title("Anonymous Logs - Admin View")
         log_window.geometry("800x600")
         log_window.configure(bg=self.colors['background'])
         
-        # Log display
+
         log_text = scrolledtext.ScrolledText(
             log_window,
             font=("Consolas", 10),
@@ -798,44 +793,40 @@ class SimpleChatbotGUI:
         )
         log_text.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
         
-        # Display logs
-        log_text.insert(tk.END, f"🆔 Session ID: {self.session_id}\n")
-        log_text.insert(tk.END, f"👤 Current User: {self.current_user}\n")
-        log_text.insert(tk.END, f"📊 Total Log Entries: {len(self.anonymous_logs)}\n\n")
+       
+        log_text.insert(tk.END, f"Session ID: {self.session_id}\n")
+        log_text.insert(tk.END, f"Current User: {self.current_user}\n")
+        log_text.insert(tk.END, f"Total Log Entries: {len(self.anonymous_logs)}\n\n")
         
         for i, log in enumerate(self.anonymous_logs, 1):
-            log_text.insert(tk.END, f"📝 Log {i}:\n")
-            log_text.insert(tk.END, f"  🎯 Action: {log.get('action', 'interaction')}\n")
-            log_text.insert(tk.END, f"  ⏰ Time: {log.get('timestamp', 'N/A')}\n")
+            log_text.insert(tk.END, f"Log {i}:\n")
+            log_text.insert(tk.END, f"  Action: {log.get('action', 'interaction')}\n")
+            log_text.insert(tk.END, f"  Time: {log.get('timestamp', 'N/A')}\n")
             
             if 'data_types_redacted' in log:
-                log_text.insert(tk.END, f"  🔒 Redacted: {log['data_types_redacted']}\n")
+                log_text.insert(tk.END, f"  Redacted: {log['data_types_redacted']}\n")
             
             if 'original_length' in log and 'processed_length' in log:
-                log_text.insert(tk.END, f"  📏 Length: {log['original_length']} → {log['processed_length']}\n")
+                log_text.insert(tk.END, f"  Length: {log['original_length']} → {log['processed_length']}\n")
             
             log_text.insert(tk.END, "\n")
     
     def _insert_newline(self, event=None):
         """Insert a newline when Shift+Return is pressed"""
         self.message_input.insert(tk.INSERT, "\n")
-        return "break"  # Prevent default behavior
+        return "break"  
     
     def _auto_resize_input(self, event=None):
         """Auto-resize the input text widget based on content"""
         content = self.message_input.get("1.0", tk.END).strip()
         if not content:
-            # Reset to minimum height
             self.message_input.configure(height=3)
             return
-        
-        # Count lines in content
+
         lines = content.count('\n') + 1
         
-        # Calculate optimal height (min 3, max 8 lines)
         optimal_height = min(max(lines, 3), 8)
         
-        # Only resize if height changed
         current_height = int(self.message_input.cget("height"))
         if optimal_height != current_height:
             self.message_input.configure(height=optimal_height)
@@ -843,65 +834,55 @@ class SimpleChatbotGUI:
     def send_message(self, event=None):
         """Send a message and get response"""
         if self.is_loading:
-            return  # Prevent sending while loading
+            return  
         
         message = self.message_input.get("1.0", tk.END).strip()
         if not message:
             return
         
-        # Clear input
+        
         self.message_input.delete("1.0", tk.END)
-        # Reset height after clearing
+
         self.message_input.configure(height=3)
         
-        # Add user message
         self.add_user_message(message)
-        
-        # Process message with redaction if enabled
+     
         if self.redaction_enabled:
             redacted_message = self._redact_sensitive_data(message)
             if redacted_message != message:
-                self.add_system_message(f"🔒 Sensitive data redacted: {redacted_message}")
+                self.add_system_message(f"Sensitive data redacted: {redacted_message}")
                 processed_message = redacted_message
             else:
                 processed_message = message
         else:
             processed_message = message
-        
-        # Show loading indicator
+      
         self.show_loading_indicator()
-        
-        # Get bot response in background thread
+      
         threading.Thread(
             target=self._get_bot_response_async,
             args=(processed_message,),
             daemon=True
         ).start()
-        
-        # Add to conversation history
+    
         self.conversation_history.append({"role": "user", "content": processed_message})
-        
-        # Keep only the last max_history_length messages
-        if len(self.conversation_history) > self.max_history_length * 2:  # *2 because each exchange has user + assistant
+     
+        if len(self.conversation_history) > self.max_history_length * 2:  
             self.conversation_history = self.conversation_history[-self.max_history_length * 2:]
-        
-        # Save current session state
+     
         self._save_current_session()
-        
-        # Log the interaction
+      
         self._log_interaction(message, processed_message, "")
     
     def _save_current_session(self):
         """Save current session state"""
         if self.current_session_id:
-            # Update existing session
             for session in self.chat_sessions:
                 if session['id'] == self.current_session_id:
                     session['messages'] = self.conversation_history.copy()
                     session['last_updated'] = datetime.now().isoformat()
                     break
         else:
-            # Create new session
             self.current_session_id = self.session_id
             new_session = {
                 'id': self.current_session_id,
@@ -916,33 +897,31 @@ class SimpleChatbotGUI:
         """Show loading indicator"""
         self.is_loading = True
         self.send_button.config(
-            text="⏳ Loading...",
+            text="Loading...",
             bg=self.colors['secondary'],
             fg='white',
             state=tk.DISABLED
         )
         self.message_input.config(state=tk.DISABLED)
-        self.add_system_message("🤖 AI is thinking...")
+        self.add_system_message("AI is thinking...")
     
     def hide_loading_indicator(self):
         """Hide loading indicator"""
         self.is_loading = False
         self.send_button.config(
-            text="📤 Send",
+            text="Send",
             bg=self.colors['primary'],
             fg=self.colors['secondary'],
             state=tk.NORMAL
         )
         self.message_input.config(state=tk.NORMAL)
         self.message_input.focus()
-        # Reset input height to default
         self.message_input.configure(height=3)
     
     def _get_bot_response_async(self, message):
         """Get bot response in background thread"""
         try:
             response = self._get_bot_response(message)
-            # Put response in queue for main thread
             self.response_queue.put(("success", response))
         except Exception as e:
             error_msg = f"Error getting response: {str(e)}"
@@ -956,14 +935,11 @@ class SimpleChatbotGUI:
                 
                 if result_type == "success":
                     self.add_bot_message(response)
-                    # Update the log with the actual response
                     self._update_last_log_response(response)
                 else:
-                    self.add_system_message(f"⚠️ {response}")
-                    # Fallback to local response
-                    fallback_response = self._get_fallback_response("")
+                    self.add_system_message(f"{response}")
+                     fallback_response = self._get_fallback_response("")
                     self.add_bot_message(fallback_response)
-                    # Update the log with the fallback response
                     self._update_last_log_response(fallback_response)
                 
                 self.hide_loading_indicator()
@@ -972,7 +948,6 @@ class SimpleChatbotGUI:
         except queue.Empty:
             pass
         
-        # Schedule next check
         self.root.after(100, self.check_api_responses)
     
     def _update_last_log_response(self, response):
@@ -982,7 +957,6 @@ class SimpleChatbotGUI:
             if last_log.get('action') == 'interaction':
                 last_log['response_length'] = len(response)
         
-        # Add bot response to conversation history
         self.conversation_history.append({"role": "assistant", "content": response})
     
     def _redact_sensitive_data(self, text):
@@ -991,7 +965,6 @@ class SimpleChatbotGUI:
     
     def _basic_redact_sensitive_data(self, text):
         """Intelligent redaction that preserves meaning while protecting sensitive data"""
-        # Patterns for sensitive data - more targeted to avoid over-redaction
         patterns = {
             "email": r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b',
             "phone": r'\b\d{3}[-.]?\d{3}[-.]?\d{4}\b',
@@ -1006,44 +979,36 @@ class SimpleChatbotGUI:
         }
         
         redacted_text = text
-        
-        # Only redact if the text contains actual sensitive data, not just code examples
+
         sensitive_data_found = False
         
         for data_type, pattern in patterns.items():
             matches = re.findall(pattern, redacted_text, re.IGNORECASE)
             for match in matches:
-                # Handle both string and tuple matches
+    
                 if isinstance(match, tuple):
                     match = match[0] if match[0] else match
-                
-                # Skip redaction only for obvious placeholder/example data
-                # This is more restrictive - only skip if it's clearly placeholder data
+           
                 if data_type == "email":
-                    # Only skip if it's clearly a placeholder like "user@example.com" or "test@test.com"
+        
                     if match.lower() in ["user@example.com", "test@test.com", "admin@example.com", "demo@example.com"]:
                         continue
                 elif data_type == "url":
-                    # Only skip if it's clearly a placeholder
                     if match.lower() in ["https://example.com", "http://localhost", "https://test.com"]:
                         continue
                 elif data_type == "file_path":
-                    # Only skip if it's clearly a placeholder
                     if any(placeholder in match.lower() for placeholder in ["/example/", "/test/", "example.txt", "test.txt"]):
                         continue
                 elif data_type == "credit_card":
-                    # No longer skipping test card numbers - user wants them redacted
                     pass
                 
                 sensitive_data_found = True
-                
-                # Create a redacted version
+              
                 if data_type == "email":
                     redacted = f"[EMAIL_{hashlib.md5(match.encode()).hexdigest()[:8]}]"
                 elif data_type == "phone":
                     redacted = f"[PHONE_{match[-4:]}]"
                 elif data_type == "api_key":
-                    # Clean up the API key (remove extra spaces)
                     clean_key = re.sub(r'\s+', '', match)
                     redacted = f"[API_KEY_{clean_key[-8:]}]"
                 elif data_type == "password":
@@ -1062,14 +1027,11 @@ class SimpleChatbotGUI:
                     redacted = "[SSN_REDACTED]"
                 else:
                     redacted = f"[{data_type.upper()}_REDACTED]"
-                
-                # Replace the original pattern match
+          
                 if data_type == "api_key":
-                    # Replace the entire pattern including the prefix
                     full_pattern = f"(?:sk-|api[_-]?key[:\s]*|token[:\s]*|auth[:\s]*){re.escape(match)}"
                     redacted_text = re.sub(full_pattern, redacted, redacted_text, flags=re.IGNORECASE)
                 elif data_type == "password":
-                    # Replace the entire pattern including the prefix
                     full_pattern = f"(?:password|passwd|pwd|secret)[:\s]*{re.escape(match)}"
                     redacted_text = re.sub(full_pattern, redacted, redacted_text, flags=re.IGNORECASE)
                 else:
@@ -1096,8 +1058,6 @@ class SimpleChatbotGUI:
             "X-Title": "Privacy-Aware Chatbot",
             "Content-Type": "application/json"
         }
-        
-        # System prompt to make the chatbot more helpful while being privacy-aware
         system_prompt = """You are a helpful AI assistant that can provide code review, programming advice, and technical guidance. You can analyze code structure, logic, and best practices while being mindful of privacy.
 
 IMPORTANT GUIDELINES:
@@ -1123,37 +1083,33 @@ PRIVACY PROTECTION:
 - Use placeholder text like [EMAIL_REDACTED] or [API_KEY_REDACTED] when referring to sensitive data
 
 Your goal is to be helpful and constructive while maintaining privacy awareness and supporting educational discussions about AI security."""
-        
-        # Prepare messages with conversation history
+
         messages = [{"role": "system", "content": system_prompt}] + self.conversation_history.copy()
         messages.append({"role": "user", "content": message})
         
         data = {
             "model": "anthropic/claude-3-haiku",
             "messages": messages,
-            "max_tokens": 1000,  # Increased token limit
-            "temperature": 0.8,  # Slightly higher temperature for more creative responses
-            "top_p": 0.9,  # Allow more diverse responses
-            "frequency_penalty": 0.1,  # Reduce repetition
-            "presence_penalty": 0.1  # Encourage new topics
+            "max_tokens": 1000, 
+            "temperature": 0.8,  
+            "top_p": 0.9, 
+            "frequency_penalty": 0.1, 
+            "presence_penalty": 0.1 
         }
-        
-        # Use shorter timeout to prevent hanging
+    
         response = requests.post(
             "https://openrouter.ai/api/v1/chat/completions",
             headers=headers,
             json=data,
-            timeout=20  # Increased timeout to 20 seconds
+            timeout=20 
         )
         
         if response.status_code == 200:
             result = response.json()
             content = result["choices"][0]["message"]["content"]
-            # Ensure we get the complete response
             if not content.strip():
                 raise Exception("Empty response from API")
-            
-            # Check if the AI model is refusing to answer (common refusal patterns)
+         
             refusal_indicators = [
                 "I apologize, but I don't feel comfortable",
                 "I cannot provide",
@@ -1169,7 +1125,6 @@ Your goal is to be helpful and constructive while maintaining privacy awareness 
             
             content_lower = content.lower()
             if any(indicator.lower() in content_lower for indicator in refusal_indicators):
-                # If the AI refuses, provide a helpful educational response
                 return self._get_educational_response(message)
             
             return content
@@ -1179,12 +1134,11 @@ Your goal is to be helpful and constructive while maintaining privacy awareness 
     def _get_educational_response(self, message):
         """Provide educational responses when AI model refuses to answer"""
         message_lower = message.lower() if message else ""
-        
-        # Check for specific topics that might trigger refusals
+
         if any(word in message_lower for word in ["vulnerability", "vulnerabilities", "proposal", "draft", "attack", "exploit"]):
             return """I understand you're interested in AI chatbot vulnerabilities and security analysis. Let me provide some educational insights:
 
-🔍 **AI Chatbot Vulnerability Analysis**
+**AI Chatbot Vulnerability Analysis**
 
 **Common Vulnerability Categories:**
 • **Prompt Injection**: Malicious inputs designed to bypass safety measures
@@ -1207,11 +1161,11 @@ Would you like me to elaborate on any specific vulnerability category or discuss
         # Default educational response
         return """I can help you with educational discussions about AI systems and security! Here are some areas we can explore:
 
-• 🔍 **AI System Analysis**: Understanding how AI models work and their limitations
-• 🛡️ **Security Best Practices**: Implementing robust protection mechanisms
-• 📝 **Research and Development**: Educational content for improving AI systems
-• 🔒 **Privacy Protection**: Data redaction and anonymization techniques
-• ⚡ **Performance Optimization**: Making AI systems more efficient and reliable
+• **AI System Analysis**: Understanding how AI models work and their limitations
+• **Security Best Practices**: Implementing robust protection mechanisms
+• **Research and Development**: Educational content for improving AI systems
+• **Privacy Protection**: Data redaction and anonymization techniques
+• **Performance Optimization**: Making AI systems more efficient and reliable
 
 What specific aspect would you like to learn more about?"""
 
@@ -1224,41 +1178,37 @@ What specific aspect would you like to learn more about?"""
         
         # Enhanced responses with code examples
         responses = {
-            "hello": "Hello! 👋 How can I help you today? I can assist with programming, security, or general questions!",
-            "help": "I can help you with:\n\n• 💻 Programming questions and code review\n• 🔒 Data privacy and security discussions\n• 📝 Code examples and best practices\n• 🛡️ Security implementation guidance\n\nWhat would you like to explore?",
+            "hello": "Hello! How can I help you today? I can assist with programming, security, or general questions!",
+            "help": "I can help you with:\n\n• Programming questions and code review\n• Data privacy and security discussions\n• Code examples and best practices\n• 🛡️ Security implementation guidance\n\nWhat would you like to explore?",
             "python": "Python is excellent! Here's a quick example:\n\n```python\n# Simple function example\ndef greet(name):\n    return f\"Hello, {name}!\"\n\n# Usage\nprint(greet(\"World\"))  # Output: Hello, World!\n```\n\nWhat specific Python topic would you like to discuss?",
             "javascript": "JavaScript is great for web development! Here's a modern example:\n\n```javascript\n// Arrow function example\nconst greet = (name) => `Hello, ${name}!`;\n\n// Usage\nconsole.log(greet('World')); // Output: Hello, World!\n```\n\nWhat JavaScript topic interests you?",
             "api": "APIs are powerful! Here's a basic example:\n\n```python\nimport requests\n\n# Simple API call\ndef get_data(url):\n    response = requests.get(url)\n    return response.json()\n```\n\nWhat type of API are you working with?",
-            "security": "Security is crucial! Here are some key principles:\n\n• 🔐 Always validate input data\n• 🛡️ Use HTTPS for sensitive data\n• 🔑 Implement proper authentication\n• 📝 Log security events\n\nWhat security aspect would you like to discuss?",
-            "privacy": "Privacy protection is essential! I automatically redact sensitive data like:\n\n• 📧 Email addresses\n• 🔑 API keys and passwords\n• 📱 Phone numbers\n• 💳 Credit card numbers\n\nTry sending me a message with sensitive data to see it in action!",
-            "code": "I can help you review code! Here are some areas I can analyze:\n\n• 🏗️ Code structure and organization\n• 🔧 Logic and algorithms\n• 📝 Naming conventions and readability\n• 🛡️ Security best practices\n• ⚡ Performance optimization\n• 🐛 Bug identification and debugging\n\nShare your code and I'll provide constructive feedback!",
-            "review": "Code review is my specialty! I can help with:\n\n• 📊 Code quality assessment\n• 🔍 Identifying potential issues\n• 💡 Suggesting improvements\n• 🛡️ Security vulnerability detection\n• 📚 Best practice recommendations\n\nWhat code would you like me to review?",
-            "database": "Database design is important! Here are some key considerations:\n\n• 🏗️ Schema design and normalization\n• 🔒 Data security and encryption\n• 📊 Query optimization\n• 🛡️ SQL injection prevention\n• 📝 Proper indexing strategies\n\nWhat database topic would you like to discuss?",
-            "vulnerability": "AI chatbot vulnerabilities are important to understand! Here are key areas:\n\n• 🔍 Input validation and sanitization\n• 🛡️ Prompt injection attacks\n• 🔒 Data privacy and redaction\n• 📝 Model safety and guardrails\n• ⚡ Response filtering and moderation\n\nWhat specific vulnerability aspect interests you?",
-            "proposal": "I can help you draft proposals! Here are some areas I can assist with:\n\n• 📊 Technical documentation\n• 🔍 Security analysis\n• 💡 System design proposals\n• 🛡️ Privacy protection strategies\n• 📝 Research and educational content\n\nWhat type of proposal would you like to work on?",
-            "ai": "AI systems have unique considerations:\n\n• 🤖 Model behavior and safety\n• 🔒 Privacy and data protection\n• 🛡️ Security vulnerabilities\n• 📝 Ethical AI development\n• ⚡ Performance and reliability\n\nWhat AI topic would you like to explore?"
+            "security": "Security is crucial! Here are some key principles:\n\n• Always validate input data\n• Use HTTPS for sensitive data\n• Implement proper authentication\n• 📝 Log security events\n\nWhat security aspect would you like to discuss?",
+            "privacy": "Privacy protection is essential! I automatically redact sensitive data like:\n\n• Email addresses\n• API keys and passwords\n• Phone numbers\n• 💳 Credit card numbers\n\nTry sending me a message with sensitive data to see it in action!",
+            "code": "I can help you review code! Here are some areas I can analyze:\n\n•  Code structure and organization\n• 🔧 Logic and algorithms\n• Naming conventions and readability\n• 🛡️ Security best practices\n• ⚡ Performance optimization\n• 🐛 Bug identification and debugging\n\nShare your code and I'll provide constructive feedback!",
+            "review": "Code review is my specialty! I can help with:\n\n•  Code quality assessment\n• Identifying potential issues\n• Suggesting improvements\n•  Security vulnerability detection\n• 📚 Best practice recommendations\n\nWhat code would you like me to review?",
+            "database": "Database design is important! Here are some key considerations:\n\n•  Schema design and normalization\n• Data security and encryption\n•  Query optimization\n• 🛡️ SQL injection prevention\n• 📝 Proper indexing strategies\n\nWhat database topic would you like to discuss?",
+            "vulnerability": "AI chatbot vulnerabilities are important to understand! Here are key areas:\n\n• Input validation and sanitization\n• Prompt injection attacks\n• 🔒 Data privacy and redaction\n• 📝 Model safety and guardrails\n• ⚡ Response filtering and moderation\n\nWhat specific vulnerability aspect interests you?",
+            "proposal": "I can help you draft proposals! Here are some areas I can assist with:\n\n• Technical documentation\n• Security analysis\n• System design proposals\n• 🛡️ Privacy protection strategies\n• 📝 Research and educational content\n\nWhat type of proposal would you like to work on?",
+            "ai": "AI systems have unique considerations:\n\n• Model behavior and safety\n• Privacy and data protection\n• Security vulnerabilities\n• Ethical AI development\n• ⚡ Performance and reliability\n\nWhat AI topic would you like to explore?"
         }
-        
-        # Check for keywords
+       
         for keyword, response in responses.items():
             if keyword in message_lower:
                 return response
-        
-        # Check if message contains code-like patterns
+   
         if any(word in message_lower for word in ["def ", "function", "class ", "import ", "const ", "var ", "let ", "if ", "for ", "while ", "try ", "catch "]):
-            return "I can see you're working with code! I can help you with:\n\n• 🔍 Code review and analysis\n• 🐛 Debugging and troubleshooting\n• 💡 Optimization suggestions\n• 🛡️ Security improvements\n• 📝 Best practice recommendations\n\nWhat specific aspect would you like me to focus on?"
-        
-        # Check for vulnerability and security-related questions
+            return "I can see you're working with code! I can help you with:\n\n• Code review and analysis\n• Debugging and troubleshooting\n• Optimization suggestions\n• 🛡️ Security improvements\n• 📝 Best practice recommendations\n\nWhat specific aspect would you like me to focus on?"
+    
         if any(word in message_lower for word in ["vulnerability", "vulnerabilities", "security", "attack", "exploit", "breach", "hack", "penetration", "redact", "redaction", "proposal", "draft"]):
-            return "I can help you with security and vulnerability analysis! Here are some areas I can discuss:\n\n• 🔍 AI chatbot vulnerabilities and attack vectors\n• 🛡️ Data redaction and privacy protection\n• 📝 Security proposal drafting and analysis\n• 🔒 Model safety and guardrail bypasses\n• ⚡ Input validation and sanitization\n• 📊 Educational content about AI security\n\nWhat specific security topic would you like to explore?"
-        
-        # General responses
+            return "I can help you with security and vulnerability analysis! Here are some areas I can discuss:\n\n• AI chatbot vulnerabilities and attack vectors\n• 🛡️ Data redaction and privacy protection\n• 📝 Security proposal drafting and analysis\n• 🔒 Model safety and guardrail bypasses\n• ⚡ Input validation and sanitization\n• 📊 Educational content about AI security\n\nWhat specific security topic would you like to explore?"
+      
         general_responses = [
-            "That's interesting! Tell me more about that. 🤔",
-            "I understand. How can I help you with this? 💡",
-            "Thanks for sharing! Is there anything specific you'd like to know? 📚",
-            "I see what you mean. What would you like to explore further? 🔍",
-            "That's a good point! What's your next question? 🚀"
+            "That's interesting! Tell me more about that. ",
+            "I understand. How can I help you with this? ",
+            "Thanks for sharing! Is there anything specific you'd like to know? ",
+            "I see what you mean. What would you like to explore further? ",
+            "That's a good point! What's your next question? "
         ]
         
         import random
@@ -1276,22 +1226,18 @@ What specific aspect would you like to learn more about?"""
             "conversation_topic": "",
             "is_follow_up": False
         }
-        
-        # Get the last few messages for context
+     
         recent_messages = self.conversation_history[-6:]  # Last 3 exchanges
-        
-        # Find the last user and bot messages
+       
         for msg in reversed(recent_messages):
             if msg["role"] == "user" and not context["last_user_message"]:
                 context["last_user_message"] = msg["content"]
             elif msg["role"] == "assistant" and not context["last_bot_message"]:
                 context["last_bot_message"] = msg["content"]
-        
-        # Determine if this is a follow-up question
+       
         if context["has_previous_messages"]:
             context["is_follow_up"] = True
-            
-            # Analyze conversation topic
+          
             all_text = " ".join([msg["content"] for msg in recent_messages]).lower()
             if any(word in all_text for word in ["python", "code", "programming"]):
                 context["conversation_topic"] = "programming"
@@ -1303,19 +1249,19 @@ What specific aspect would you like to learn more about?"""
     def add_user_message(self, message):
         """Add user message to chat display"""
         timestamp = datetime.now().strftime("%H:%M")
-        self.chat_display.insert(tk.END, f"\n[{timestamp}] 👤 You:\n{message}\n", "user")
+        self.chat_display.insert(tk.END, f"\n[{timestamp}] You:\n{message}\n", "user")
         self.chat_display.see(tk.END)
     
     def add_bot_message(self, message):
         """Add bot message to chat display"""
         timestamp = datetime.now().strftime("%H:%M")
-        self.chat_display.insert(tk.END, f"\n[{timestamp}] 🤖 Bot:\n{message}\n", "bot")
+        self.chat_display.insert(tk.END, f"\n[{timestamp}] Bot:\n{message}\n", "bot")
         self.chat_display.see(tk.END)
     
     def add_system_message(self, message):
         """Add system message to chat display"""
         timestamp = datetime.now().strftime("%H:%M")
-        self.chat_display.insert(tk.END, f"\n[{timestamp}] ⚙️ System:\n{message}\n", "system")
+        self.chat_display.insert(tk.END, f"\n[{timestamp}] System:\n{message}\n", "system")
         self.chat_display.see(tk.END)
     
     def _log_interaction(self, original_message, processed_message, response):
@@ -1381,10 +1327,10 @@ What specific aspect would you like to learn more about?"""
         """Toggle redaction on/off"""
         self.redaction_enabled = not self.redaction_enabled
         redaction_status = "ON" if self.redaction_enabled else "OFF"
-        self.redaction_button.config(text=f"🔒 Redaction: {redaction_status}")
+        self.redaction_button.config(text=f"Redaction: {redaction_status}")
         self._log_action("redaction_toggle", {"enabled": self.redaction_enabled})
         
-        # Update status bar
+       
         self._update_status()
     
     def clear_chat(self):
@@ -1405,7 +1351,7 @@ What specific aspect would you like to learn more about?"""
                 f.write(f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
                 f.write("=" * 50 + "\n\n")
                 
-                # Get chat content
+               
                 chat_content = self.chat_display.get(1.0, tk.END)
                 f.write(chat_content)
             
@@ -1416,7 +1362,7 @@ What specific aspect would you like to learn more about?"""
     
     def _update_status(self):
         """Update status bar"""
-        # Status is now handled in the chat interface
+
         pass
 
 def main():

@@ -6,12 +6,11 @@ from config import USE_SECURE_FILTER
 
 router = APIRouter()
 
-# Define enhanced request model
 class ProxyRequest(BaseModel):
     message: str
     filename: str = "user_code.py"
-    use_secure_filter: Optional[bool] = None  # Override global setting
-    security_level: Optional[str] = "high"  # low, medium, high
+    use_secure_filter: Optional[bool] = None 
+    security_level: Optional[str] = "high"  
 
 @router.post("/chat")
 async def secure_proxy(data: ProxyRequest):
@@ -27,11 +26,11 @@ async def secure_proxy(data: ProxyRequest):
         file_name = data.filename
         use_secure_filter = data.use_secure_filter if data.use_secure_filter is not None else USE_SECURE_FILTER
         
-        # Log the request for monitoring
-        print(f"🔐 Processing request with secure filtering: {use_secure_filter}")
+       
+        print(f"Processing request with secure filtering: {use_secure_filter}")
         
         response = forward_to_ai(user_code, file_name, use_secure_filter)
-        # Robust: Always return the same structure
+      
         if isinstance(response, dict) and "error" in response:
             return {
                 "proxy_response": None,

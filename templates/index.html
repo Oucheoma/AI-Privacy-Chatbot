@@ -216,7 +216,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🔐 Secure AI Proxy Gateway</h1>
+            <h1>Secure AI Proxy Gateway</h1>
             <p>Enterprise-grade AI proxy with comprehensive security filtering</p>
         </div>
         
@@ -228,7 +228,7 @@
                     <input type="checkbox" id="secureFilter" checked>
                     <span class="slider"></span>
                 </label>
-                <span id="modeLabel">🔒 Secure Enterprise Mode</span>
+                <span id="modeLabel">Secure Enterprise Mode</span>
             </div>
             
             <form id="proxyForm">
@@ -243,7 +243,7 @@
                 </div>
                 
                 <button type="submit" class="btn" id="submitBtn">
-                    🚀 Send to AI Proxy
+                    Send to AI Proxy
                 </button>
             </form>
             
@@ -254,7 +254,7 @@
                 <!-- Toggle for full response details -->
                 <div style="margin-top: 15px;">
                     <button type="button" id="toggleDetails" class="btn" style="background: #6c757d; padding: 8px 16px; font-size: 14px;">
-                        📋 Show Full Response Details
+                        Show Full Response Details
                     </button>
                 </div>
                 
@@ -268,19 +268,19 @@
             
             <div class="features">
                 <div class="feature-card">
-                    <h4>🛡️ PII Protection</h4>
+                    <h4>PII Protection</h4>
                     <p>Automatically detects and masks personal identifiable information</p>
                 </div>
                 <div class="feature-card">
-                    <h4>💻 Code Security</h4>
+                    <h4>Code Security</h4>
                     <p>Protects source code while preserving logic and structure</p>
                 </div>
                 <div class="feature-card">
-                    <h4>🏢 Business Privacy</h4>
+                    <h4>Business Privacy</h4>
                     <p>Filters confidential business documents and company secrets</p>
                 </div>
                 <div class="feature-card">
-                    <h4>🔓 Personal Mode</h4>
+                    <h4>Personal Mode</h4>
                     <p>Toggle off security for personal chatbot use</p>
                 </div>
             </div>
@@ -300,10 +300,10 @@
 
         secureFilter.addEventListener('change', function() {
             if (this.checked) {
-                modeLabel.textContent = '🔒 Secure Enterprise Mode';
+                modeLabel.textContent = 'Secure Enterprise Mode';
                 modeLabel.style.color = '#2c3e50';
             } else {
-                modeLabel.textContent = '🔓 Personal Chatbot Mode';
+                modeLabel.textContent = 'Personal Chatbot Mode';
                 modeLabel.style.color = '#e74c3c';
             }
         });
@@ -312,10 +312,10 @@
         toggleDetails.addEventListener('click', function() {
             if (fullResponseDetails.style.display === 'none') {
                 fullResponseDetails.style.display = 'block';
-                this.textContent = '📋 Hide Full Response Details';
+                this.textContent = 'Hide Full Response Details';
             } else {
                 fullResponseDetails.style.display = 'none';
-                this.textContent = '📋 Show Full Response Details';
+                this.textContent = 'Show Full Response Details';
             }
         });
 
@@ -332,10 +332,10 @@
             }
             
             submitBtn.disabled = true;
-            submitBtn.textContent = '⏳ Processing...';
+            submitBtn.textContent = 'Processing...';
             response.style.display = 'none';
             fullResponseDetails.style.display = 'none';
-            toggleDetails.textContent = '📋 Show Full Response Details';
+            toggleDetails.textContent = 'Show Full Response Details';
             
             try {
                 const response = await fetch('/chat', {
@@ -410,7 +410,7 @@
                 document.getElementById('response').style.display = 'block';
             } finally {
                 submitBtn.disabled = false;
-                submitBtn.textContent = '🚀 Send to AI Proxy';
+                submitBtn.textContent = 'Send to AI Proxy';
             }
         });
     </script>

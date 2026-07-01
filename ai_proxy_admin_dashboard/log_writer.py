@@ -1,5 +1,4 @@
-# DEPRECATED: Logging is now handled by sqlite_logger.py (SQLite database logger)
-# This file is kept for reference only.
+#REFERENCE
 import json
 import threading
 from datetime import datetime
